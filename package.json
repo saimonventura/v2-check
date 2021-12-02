@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "node index.ts"
+  },
+  "dependencies": {
+    "axios": "^0.24.0"
+  }
+}
