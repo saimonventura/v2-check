@@ -268,7 +268,9 @@ const updateStoreUnlogged = () => {
     })
     .catch(({ response }) => {
       // precisa colocar tratativa de se voltou o erro certo ou não
-      console.log(response);
+      if (!response.data?.message) {
+        console.log("updateStoreUnlogged - Deveria ter message", response.data);
+      }
     })
     .finally(() => {
       updateStoreWithouParams();
@@ -496,7 +498,9 @@ const createStoreUnlogged = () => {
     })
     .catch(({ response }) => {
       // precisa colocar tratativa de se voltou o erro certo ou não
-      console.log(response);
+      if (!response.data?.message) {
+        console.log("createStoreUnlogged - Deveria ter message", response.data);
+      }
     })
     .finally(() => {
       createStoreWithOutParams();
