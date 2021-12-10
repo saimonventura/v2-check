@@ -79,7 +79,7 @@ const getStoreByIdUpdatedWithParams = () => {
             metas.url
         );
       }
-      if (data.metas?.cashbackRate !== metas.cashbackRate) {
+      if (data.metas?.cashbackRate != metas.cashbackRate) {
         console.log(
           "getStoreByIdUpdatedWithParams - Deveria ter retornado o cashbackRate correto " +
             metas.cashbackRate
@@ -215,7 +215,10 @@ const updateStoreOK = () => {
       storeSlug = data.slug;
     })
     .catch(({ response: { data } }) => {
-      console.log("updateStoreOK - Deveria ter criado a store com sucesso");
+      console.log(
+        "updateStoreOK - Deveria ter criado a store com sucesso",
+        JSON.stringify(data)
+      );
     })
     .finally(() => {
       getStoreByIdUpdated();
@@ -445,7 +448,6 @@ const createStoreOk = () => {
       }
     )
     .then(({ data: { data } }) => {
-      console.log("createStoreOk data -" + data);
       storeId = data.term_id;
       storeSlug = data.slug;
     })
