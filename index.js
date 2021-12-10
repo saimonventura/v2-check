@@ -8,13 +8,15 @@ const TESTE_AUTOMATICO_UPDATED_WITH_METAS =
   "Teste Automático ATUALIZADO com metas";
 
 // Routes
-const GET_SESSION_TOKEN = `/getSessionToken/1ca7bad9fde60a7544385f87c91945bf2a8e093f30791fc33cdc99d65e67fe87`;
+const GET_SESSION_TOKEN = `/getSessionToken/6aa0ce180b3682aa5c8a74a811001a99dfc33c462330ec2dccda2a8fb89af25b`;
+const GET_SESSION_TOKEN_NORMAL_USER = `/getSessionToken/eb593ea1092b322300ecc0b9bfc3ad46224440e911ef844b72bb537efbf23a86`;
 const CREATE_STORE = `/store/createStore`;
-const GET_STORE = (by, key) => `/store/getStoreBy/${by}/${key}`;
+const GET_STORE = (by, key) => `/store/getStoreBy/${by}/${key}?clearCache=true`;
 const UPDATE_STORE = (id) => `/store/updateStore/${id}`;
 
 // Vars
 let sessionToken = "";
+let sessionTokenNormal = "";
 let now = Date.now();
 let storeId = "";
 let storeSlug = "";
@@ -414,8 +416,11 @@ const createStoreDuplicated = () => {
       );
     })
     .catch(({ response: { data } }) => {
-      if (data.retcode !== 98) {
-        console.log("createStoreDuplicated - Deveria ter voltado retcode 98");
+      if (data.message !== "já existe uma marca com esse slug") {
+        console.log(
+          "createStoreDuplicated - Deveria ter voltado mengagem correta " +
+            JSON.stringify(data)
+        );
       }
     })
     .finally(() => {
@@ -440,11 +445,15 @@ const createStoreOk = () => {
       }
     )
     .then(({ data: { data } }) => {
+      console.log("createStoreOk data -" + data);
       storeId = data.term_id;
       storeSlug = data.slug;
     })
     .catch(({ response: { data } }) => {
-      console.log("createStoreOk - Deveria ter criado a store com sucesso");
+      console.log(
+        "createStoreOk - Deveria ter criado a store com sucesso",
+        data
+      );
     })
     .finally(() => {
       createStoreDuplicated();
@@ -485,6 +494,40 @@ const createStoreWithOutParams = () => {
     });
 };
 
+const createStoreWithouPermission = () => {
+  now = Date.now();
+  api
+    .post(
+      CREATE_STORE,
+      {
+        name: TESTE_AUTOMATICO,
+        slug: TESTE_AUTOMATICO + now,
+        description: TESTE_AUTOMATICO,
+      },
+      {
+        headers: {
+          sessionToken: sessionTokenNormal,
+        },
+      }
+    )
+    .then(() => {
+      console.log(
+        "createStoreWithouPermission - Deveria ter bloqueado o acesso"
+      );
+    })
+    .catch(({ response }) => {
+      if (!response.data?.message) {
+        console.log(
+          "createStoreWithouPermission - Deveria ter message",
+          response.data
+        );
+      }
+    })
+    .finally(() => {
+      createStoreWithOutParams();
+    });
+};
+
 const createStoreUnlogged = () => {
   now = Date.now();
   api
@@ -503,7 +546,19 @@ const createStoreUnlogged = () => {
       }
     })
     .finally(() => {
-      createStoreWithOutParams();
+      createStoreWithouPermission();
+    });
+};
+
+const getSessionTokenNormalUser = () => {
+  api
+    .get(GET_SESSION_TOKEN_NORMAL_USER)
+    .then(({ data: { data } }) => {
+      sessionTokenNormal = data;
+      createStoreUnlogged();
+    })
+    .catch(() => {
+      console.log("falhou em pegar Session Token Normal");
     });
 };
 
@@ -512,9 +567,7 @@ const getSessionToken = () => {
     .get(GET_SESSION_TOKEN)
     .then(({ data: { data } }) => {
       sessionToken = data;
-    })
-    .then(() => {
-      createStoreUnlogged();
+      getSessionTokenNormalUser();
     })
     .catch(() => {
       console.log("falhou em pegar Session Token");
